@@ -25,7 +25,7 @@ And the final step is to fill the script with desired parameteres and you are re
 Your instagram actions are limited.
 
 They limit the actions you do because otherwise it seems spammy.
-My advice - Do not go above **200 unfollows per day**. The higher delay between the request is it is safer
+My advice - Do not go above **200 unfollows per day**. The higher delay between the requests is the safer it is.
 
 
 
