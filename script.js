@@ -18,7 +18,7 @@ let token = 'YOUR-SESSION-TOKEN';
 let limit = 150;
 
 /**
- * minimum delay between requests, don't go bellow 2, the higher it is it is more secure
+ * minimum delay coefficient between requests, don't go bellow 2, the higher it is it is more secure
  * @type {number}
  */
 let delay = 2;
