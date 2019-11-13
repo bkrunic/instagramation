@@ -103,13 +103,11 @@ function unFollow(toUnfollowId) {
             'Connection': 'keep-alive',
             'Content-Length': '0',
             'Origin': 'https://www.instagram.com',
-            'X-Instagram-AJAX': '243d43ec8a79',
             'Content-Type': 'application/x-www-form-urlencoded',
             'Accept': '*/*',
             'X-Requested-With': 'XMLHttpRequest',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.87 Safari/537.36',
             'X-CSRFToken': token,
-            'X-IG-App-ID': '936619743392459',
             'Sec-Fetch-Site': 'same-origin',
             'Sec-Fetch-Mode': 'cors',
             'Accept-Encoding': 'gzip, deflate, br',
@@ -159,8 +157,8 @@ async function dialyUnfollow() {
         }
 
     }
-    alert("Successfully unfollowed " + counter - 1 + " accounts");
-    console.log("Successfully unfollowed " + counter - 1 + " accounts");
+    alert("Successfully unfollowed " + counter + " accounts");
+    console.log("Successfully unfollowed " + counter + " accounts");
 }
 
 dialyUnfollow();
