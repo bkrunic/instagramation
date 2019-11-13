@@ -2,6 +2,12 @@
 
 Instagramation is unfollow-automation script that unfollows users which don't follow back. It runs in Chrome's Dev-Tools. You just need to provide cookie token taken from your session.
 ## Setting up
+
+
+![findingtoken](https://i.imgur.com/wXSB2l4.png)
+
+
+
 By pressing CTRL-SHIFT-I while you are logged in you can find your ds_user_id and csrftoken under the value column.
 
 
@@ -9,6 +15,10 @@ Next step is to copy the script into Dev-Tools which open while pressing F12 whi
 
 And the final step is to fill the script with desired parameteres and you are ready to go.
 
+## Usage
+
+
+![usage](https://i.imgur.com/1MKLfRB.png)
 
 
 ## Limits
