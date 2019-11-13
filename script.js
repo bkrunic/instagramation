@@ -2,7 +2,7 @@
  * @author bkrunic
  */
 /**
- * user unique id, you can just google "find my instagram , used to get a list of ghost-followers
+ * user unique id, you can just google "find my instagram
  * @type {string}
  */
 let id = 'YOUR-ID';
@@ -10,21 +10,40 @@ let id = 'YOUR-ID';
  * personal token from chrome-devtools, it changes each time you log-in
  * @type {string}
  */
-let token = 'TOKEN';
+let token = 'YOUR-TOKEN';
 /**
- * minimum delay between requests, don't go bellow 1 minute
+ * dialy limit, 200 is maximum, but don't be greedy
  * @type {number}
  */
-let delay = calculateDelay(1);
+let limit = 'DESIRED-LIMIT';
+
+/**
+ * minimum delay between requests, don't go bellow 2, the higher it is it is more secure
+ * @type {number}
+ */
+let delay = 'DESIRED-DELAY';
+/**
+ * helps to count unfollowed users
+ * @type {number}
+ */
+let counter = 0;
+
+/**
+ * next line executes after given param
+ * @param ms
+ * @returns {Promise<unknown>}
+ */
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 /**
  * calculates random delay
  * @returns {number}
  */
 function calculateDelay(delay) {
-    return (Math.random() + delay) * 60000;
+    return (Math.random() + 1) * delay * 60000;
 }
-
 
 /**
  * function that creates a list of account ids that account is following
@@ -92,26 +111,46 @@ function unFollow(toUnfollowId) {
     })
         .then(function (response) {
             if (response.ok) {
-                console.log("Unfollowed");
+                ++counter;
+                console.log(counter + " users have been unfollowed");
+                limit--;
             } else {
                 throw new Error("HTTP status " + response.status);
             }
         })
 }
 
-var following, followers = null;
+/**
+ * removes followers from accounts the user is following
+ * @returns {Promise<array[]>}
+ */
+async function getDifference() {
+    var following, followers = null;
 
-following = new Set(getFollow());
-following = new Set(following);
-
-followers = new Set(getFollowed());
-followers = new Set(followers);
-difference = new Set([...following].filter(x => !followers.has(x)));
-array = Array.from(difference);
-console.log(array.length + " users will be unfollowed");
-for (let i = 0; i < array.length; i++) {
-    setTimeout(function () {
-        unFollow(array[i]);
-    }, delay * (i + 1));
+    following = new Set(getFollow());
+    following = new Set(following);
+    await sleep(calculateDelay(delay));
+    followers = new Set(getFollowed());
+    followers = new Set(followers);
+    difference = new Set([...following].filter(x => !followers.has(x)));
+    return Array.from(difference);
 }
+
+/**
+ * delays executing of requests for randomized interval, limits it to declared limit,it's not recomended to execute more than once a day
+ * @returns {Promise<void>}
+ */
+async function dialyUnfollow() {
+    while (limit > 0) {
+        diff = Array.from(await getDifference());
+        for (let i = 0; i < diff.length; i++) {
+            await sleep(calculateDelay(delay));
+            unFollow(diff[i]);
+        }
+
+    }
+}
+
+dialyUnfollow();
+
 
