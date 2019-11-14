@@ -157,8 +157,7 @@ async function dialyUnfollow() {
         }
 
     }
-    alert("Successfully unfollowed " + counter + " accounts");
-    console.log("Successfully unfollowed " + counter + " accounts");
+    
 }
 
 dialyUnfollow();
