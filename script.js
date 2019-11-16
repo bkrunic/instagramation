@@ -2,26 +2,31 @@
  * @author bkrunic
  */
 /**
+ * total number of followers and number of users that you are following
+ * it will be automated in next update
+ * @type {number}
+ */
+let totalFollowed = 0, totalFollow = 0;
+/**
  * user unique id, you can just google "find my instagram
  * @type {string}
  */
-let id = 'YOUR-ID';
+let id = '';
 /**
  * personal token from chrome-devtools, it changes each time you log-in
  * @type {string}
  */
-let token = 'YOUR-SESSION-TOKEN';
+let token = '';
 /**
  * dialy limit, 200 is maximum, but don't be greedy
  * @type {number}
  */
-let limit = 150;
-
+let limit = 200;
 /**
- * minimum delay coefficient between requests, don't go bellow 2, the higher it is it is more secure
+ * minimum delay coefficient between requests, don't go bellow 1, the higher it is it is more secure
  * @type {number}
  */
-let delay = 2;
+let delay = 1;
 /**
  * helps to count unfollowed users, don't change it
  * @type {number}
@@ -49,45 +54,58 @@ function calculateDelay(delay) {
  * function that creates a list of account ids that account is following
  * @returns
  */
-function getFollow() {
+async function getFollow() {
+    var followUrl = 'https://www.instagram.com/graphql/query/?query_hash=d04b0a864b4b54837c0d870b0e77e076&variables=%7B%22id%22%3A%22' + id + '%22%2C%22include_reel%22%3Atrue%2C%22fetch_mutual%22%3Afalse%2C%22first%22%3A50%7D';
     var list = [];
     var req = new XMLHttpRequest();
 
-    req.open("GET", 'https://www.instagram.com/graphql/query/?query_hash=d04b0a864b4b54837c0d870b0e77e076&variables=%7B%22id%22%3A%22' + id + '%22%2C%22include_reel%22%3Atrue%2C%22fetch_mutual%22%3Afalse%2C%22first%22%3A50%7D', false);
-    req.send(null);
+    while (totalFollow > list.length) {
+        await sleep(calculateDelay(delay) / 2);
+        req.open("GET", followUrl, false);
+        req.send(null);
 
-    if (!(req.status === 200))
-        throw new Error("HTTP status " + req.status);
+        if (!(req.status === 200))
+            throw new Error("HTTP status " + req.status);
 
-    var json_obj = JSON.parse(req.responseText);
-    for (var node of json_obj.data.user.edge_follow.edges) {
-        list.push(String(node.node.id));
+        var json_obj = JSON.parse(req.responseText);
+        for (var node of json_obj.data.user.edge_follow.edges) {
+            list.push(String(node.node.id));
+        }
+
+        followUrl = 'https://www.instagram.com/graphql/query/?query_hash=d04b0a864b4b54837c0d870b0e77e076&variables=%7B%22id%22%3A%22' + id + '%22%2C%22include_reel%22%3Atrue%2C%22fetch_mutual%22%3Afalse%2C%22first%22%3A50%2C%22after%22%3A%22' + json_obj.data.user.edge_follow.page_info.end_cursor + '%3D%3D%22%7D';
+        followUrl = followUrl.replace('==', '');
     }
+    return Array.from(list);
 
-    return list;
 }
 
 /**
  * function that creates a list with followers ids
  * @returns {[]}
  */
-function getFollowed() {
+async function getFollowed() {
+    var followedUrl = 'https://www.instagram.com/graphql/query/?query_hash=c76146de99bb02f6415203be841dd25a&variables=%7B%22id%22%3A%22' + id + '%22%2C%22include_reel%22%3Atrue%2C%22fetch_mutual%22%3Atrue%2C%22first%22%3A50%7D';
     var list = [];
     var req = new XMLHttpRequest();
-    req.open("GET", 'https://www.instagram.com/graphql/query/?query_hash=c76146de99bb02f6415203be841dd25a&variables=%7B%22id%22%3A%22' + id + '%22%2C%22include_reel%22%3Atrue%2C%22fetch_mutual%22%3Atrue%2C%22first%22%3A50%7D', false);
-    req.send(null);
+    while (totalFollowed > list.length) {
+        await sleep(calculateDelay(delay) / 2);
 
-    if (!(req.status === 200))
-        throw new Error("HTTP status " + req.status);
+        req.open("GET", followedUrl, false);
+        req.send(null);
 
-    var json_obj = JSON.parse(req.responseText);
-    for (var node of json_obj.data.user.edge_followed_by.edges) {
-        list.push(String(node.node.id));
+        if (!(req.status === 200))
+            throw new Error("HTTP status " + req.status);
+
+        var json_obj = JSON.parse(req.responseText);
+        for (var node of json_obj.data.user.edge_followed_by.edges) {
+            list.push(String(node.node.id));
+
+        }
+        followedUrl = 'https://www.instagram.com/graphql/query/?query_hash=c76146de99bb02f6415203be841dd25a&variables=%7B%22id%22%3A%22' + id + '%22%2C%22include_reel%22%3Atrue%2C%22fetch_mutual%22%3Afalse%2C%22first%22%3A50%2C%22after%22%3A%22' + json_obj.data.user.edge_followed_by.page_info.end_cursor + '%3D%3D%22%7D';
+        followedUrl = followedUrl.replace('==', '');
 
     }
-
-
-    return list;
+    return Array.from(list);
 
 }
 
@@ -132,15 +150,17 @@ function unFollow(toUnfollowId) {
  * @returns {Promise<array[]>}
  */
 async function getDifference() {
-    var following, followers = null;
-
-    following = new Set(getFollow());
-    following = new Set(following);
+    console.log("Fetching followers, this may take some time for large accounts.");
+    var followed = await getFollowed();
     await sleep(calculateDelay(delay));
-    followers = new Set(getFollowed());
-    followers = new Set(followers);
-    difference = new Set([...following].filter(x => !followers.has(x)));
-    return Array.from(difference);
+    console.log("Fetching accounts that you are following, this may take some time for large accounts.");
+    var follow = await getFollow();
+    console.log("Followed:" + followed.length);
+    console.log("Follow:" + follow.length);
+    return follow.filter(function (x) {
+        return followed.indexOf(x) < 0;
+    });
+
 }
 
 /**
@@ -148,8 +168,10 @@ async function getDifference() {
  * @returns {Promise<void>}
  */
 async function dialyUnfollow() {
+    diff = Array.from(await getDifference());
+    console.log(diff.length + " users are not following you back.");
+
     while (limit > 1) {
-        diff = Array.from(await getDifference());
         for (let i = 0; i < diff.length; i++) {
             if (limit <= 1) break;
             await sleep(calculateDelay(delay));
@@ -157,7 +179,7 @@ async function dialyUnfollow() {
         }
 
     }
-    
+
 }
 
 dialyUnfollow();
