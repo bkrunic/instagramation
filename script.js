@@ -99,7 +99,6 @@ async function getFollowed() {
 
         }
         totalFollowed = json_obj.data.user.edge_followed_by.count;
-        console.log(totalFollowed);
         followedUrl = 'https://www.instagram.com/graphql/query/?query_hash=c76146de99bb02f6415203be841dd25a&variables=%7B%22id%22%3A%22' + id + '%22%2C%22include_reel%22%3Atrue%2C%22fetch_mutual%22%3Afalse%2C%22first%22%3A50%2C%22after%22%3A%22' + json_obj.data.user.edge_followed_by.page_info.end_cursor + '%3D%3D%22%7D';
         followedUrl = followedUrl.replace('==', '');
 
