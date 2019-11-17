@@ -33,7 +33,6 @@ let counter = 0;
  * @returns {Promise<unknown>}
  */
 function sleep(ms) {
-    console.log("Waiting...");
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
