@@ -165,14 +165,14 @@ async function getDifference() {
 async function dialyUnfollow() {
     diff = Array.from(await getDifference());
     console.log(diff.length + " users are not following you back.");
-    while (limit > 1) {
+
         for (let i = 0; i < diff.length; i++) {
-            if (limit <= 1) break;
+            if (limit==1) break;
             await sleep(calculateDelay(delay));
             unFollow(diff[i]);
         }
 
-    }
+
 
 }
 
