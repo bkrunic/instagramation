@@ -2,12 +2,6 @@
  * @author bkrunic
  */
 /**
- * total number of followers and number of users that you are following
- * it will be automated in next update
- * @type {number}
- */
-let totalFollowed = 0, totalFollow = 0;
-/**
  * user unique id, you can just google "find my instagram
  * @type {string}
  */
@@ -26,7 +20,7 @@ let limit = 200;
  * minimum delay coefficient between requests, don't go bellow 1, the higher it is it is more secure
  * @type {number}
  */
-let delay = 1;
+let delay = 2;
 /**
  * helps to count unfollowed users, don't change it
  * @type {number}
@@ -39,6 +33,7 @@ let counter = 0;
  * @returns {Promise<unknown>}
  */
 function sleep(ms) {
+    console.log("Waiting...");
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
@@ -55,12 +50,13 @@ function calculateDelay(delay) {
  * @returns
  */
 async function getFollow() {
+    let totalFollow = 2;
     var followUrl = 'https://www.instagram.com/graphql/query/?query_hash=d04b0a864b4b54837c0d870b0e77e076&variables=%7B%22id%22%3A%22' + id + '%22%2C%22include_reel%22%3Atrue%2C%22fetch_mutual%22%3Afalse%2C%22first%22%3A50%7D';
     var list = [];
     var req = new XMLHttpRequest();
 
-    while (totalFollow > list.length) {
-        await sleep(calculateDelay(delay) / 2);
+    while (totalFollow > list.length + 1) {
+        await sleep(calculateDelay(delay) / 8);
         req.open("GET", followUrl, false);
         req.send(null);
 
@@ -69,9 +65,9 @@ async function getFollow() {
 
         var json_obj = JSON.parse(req.responseText);
         for (var node of json_obj.data.user.edge_follow.edges) {
-            list.push(String(node.node.id));
+            list.push(String(node.node.username));
         }
-
+        totalFollow = json_obj.data.user.edge_follow.count;
         followUrl = 'https://www.instagram.com/graphql/query/?query_hash=d04b0a864b4b54837c0d870b0e77e076&variables=%7B%22id%22%3A%22' + id + '%22%2C%22include_reel%22%3Atrue%2C%22fetch_mutual%22%3Afalse%2C%22first%22%3A50%2C%22after%22%3A%22' + json_obj.data.user.edge_follow.page_info.end_cursor + '%3D%3D%22%7D';
         followUrl = followUrl.replace('==', '');
     }
@@ -84,11 +80,12 @@ async function getFollow() {
  * @returns {[]}
  */
 async function getFollowed() {
+    let totalFollowed = 2;
     var followedUrl = 'https://www.instagram.com/graphql/query/?query_hash=c76146de99bb02f6415203be841dd25a&variables=%7B%22id%22%3A%22' + id + '%22%2C%22include_reel%22%3Atrue%2C%22fetch_mutual%22%3Atrue%2C%22first%22%3A50%7D';
     var list = [];
     var req = new XMLHttpRequest();
-    while (totalFollowed > list.length) {
-        await sleep(calculateDelay(delay) / 2);
+    while (totalFollowed > list.length + 1) {
+        await sleep(calculateDelay(delay) / 8);
 
         req.open("GET", followedUrl, false);
         req.send(null);
@@ -98,9 +95,11 @@ async function getFollowed() {
 
         var json_obj = JSON.parse(req.responseText);
         for (var node of json_obj.data.user.edge_followed_by.edges) {
-            list.push(String(node.node.id));
+            list.push(String(node.node.username));
 
         }
+        totalFollowed = json_obj.data.user.edge_followed_by.count;
+        console.log(totalFollowed);
         followedUrl = 'https://www.instagram.com/graphql/query/?query_hash=c76146de99bb02f6415203be841dd25a&variables=%7B%22id%22%3A%22' + id + '%22%2C%22include_reel%22%3Atrue%2C%22fetch_mutual%22%3Afalse%2C%22first%22%3A50%2C%22after%22%3A%22' + json_obj.data.user.edge_followed_by.page_info.end_cursor + '%3D%3D%22%7D';
         followedUrl = followedUrl.replace('==', '');
 
@@ -155,8 +154,6 @@ async function getDifference() {
     await sleep(calculateDelay(delay));
     console.log("Fetching accounts that you are following, this may take some time for large accounts.");
     var follow = await getFollow();
-    console.log("Followed:" + followed.length);
-    console.log("Follow:" + follow.length);
     return follow.filter(function (x) {
         return followed.indexOf(x) < 0;
     });
@@ -170,7 +167,6 @@ async function getDifference() {
 async function dialyUnfollow() {
     diff = Array.from(await getDifference());
     console.log(diff.length + " users are not following you back.");
-
     while (limit > 1) {
         for (let i = 0; i < diff.length; i++) {
             if (limit <= 1) break;
