@@ -65,7 +65,7 @@ async function getFollow() {
 
         var json_obj = JSON.parse(req.responseText);
         for (var node of json_obj.data.user.edge_follow.edges) {
-            list.push(String(node.node.username));
+            list.push(String(node.node.id));
         }
         totalFollow = json_obj.data.user.edge_follow.count;
         followUrl = 'https://www.instagram.com/graphql/query/?query_hash=d04b0a864b4b54837c0d870b0e77e076&variables=%7B%22id%22%3A%22' + id + '%22%2C%22include_reel%22%3Atrue%2C%22fetch_mutual%22%3Afalse%2C%22first%22%3A50%2C%22after%22%3A%22' + json_obj.data.user.edge_follow.page_info.end_cursor + '%3D%3D%22%7D';
@@ -95,7 +95,7 @@ async function getFollowed() {
 
         var json_obj = JSON.parse(req.responseText);
         for (var node of json_obj.data.user.edge_followed_by.edges) {
-            list.push(String(node.node.username));
+            list.push(String(node.node.id));
 
         }
         totalFollowed = json_obj.data.user.edge_followed_by.count;
