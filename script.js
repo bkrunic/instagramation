@@ -20,7 +20,7 @@ let limit = 200;
  * minimum delay coefficient between requests, don't go bellow 1, the higher it is it is more secure
  * @type {number}
  */
-let delay = 2;
+let delay = 1;
 /**
  * helps to count unfollowed users, don't change it
  * @type {number}
@@ -54,8 +54,8 @@ async function getFollow() {
     var list = [];
     var req = new XMLHttpRequest();
 
-    while (totalFollow > list.length + 1) {
-        await sleep(calculateDelay(delay) / 8);
+    while (list.length < totalFollow) {
+        await sleep(calculateDelay(delay) / 22);
         req.open("GET", followUrl, false);
         req.send(null);
 
@@ -64,9 +64,12 @@ async function getFollow() {
 
         var json_obj = JSON.parse(req.responseText);
         for (var node of json_obj.data.user.edge_follow.edges) {
-            list.push(String(node.node.id));
+            list.push(node.node.id);
         }
-        totalFollow = json_obj.data.user.edge_follow.count;
+        console.log('duzina liste:' + list.length);
+        if (json_obj.data.user.edge_follow.page_info.has_next_page !== true)
+            break;
+        totalFollow = parseInt(json_obj.data.user.edge_follow.count);
         followUrl = 'https://www.instagram.com/graphql/query/?query_hash=d04b0a864b4b54837c0d870b0e77e076&variables=%7B%22id%22%3A%22' + id + '%22%2C%22include_reel%22%3Atrue%2C%22fetch_mutual%22%3Afalse%2C%22first%22%3A50%2C%22after%22%3A%22' + json_obj.data.user.edge_follow.page_info.end_cursor + '%3D%3D%22%7D';
         followUrl = followUrl.replace('==', '');
     }
@@ -83,8 +86,8 @@ async function getFollowed() {
     var followedUrl = 'https://www.instagram.com/graphql/query/?query_hash=c76146de99bb02f6415203be841dd25a&variables=%7B%22id%22%3A%22' + id + '%22%2C%22include_reel%22%3Atrue%2C%22fetch_mutual%22%3Atrue%2C%22first%22%3A50%7D';
     var list = [];
     var req = new XMLHttpRequest();
-    while (totalFollowed > list.length + 1) {
-        await sleep(calculateDelay(delay) / 8);
+    while (list.length < totalFollowed) {
+        await sleep(calculateDelay(delay) / 22);
 
         req.open("GET", followedUrl, false);
         req.send(null);
@@ -94,10 +97,13 @@ async function getFollowed() {
 
         var json_obj = JSON.parse(req.responseText);
         for (var node of json_obj.data.user.edge_followed_by.edges) {
-            list.push(String(node.node.id));
+            list.push(node.node.id);
 
         }
-        totalFollowed = json_obj.data.user.edge_followed_by.count;
+        console.log('duzina liste:' + list.length);
+        if (json_obj.data.user.edge_followed_by.page_info.has_next_page !== true)
+            break;
+        totalFollowed = parseInt(json_obj.data.user.edge_followed_by.count);
         followedUrl = 'https://www.instagram.com/graphql/query/?query_hash=c76146de99bb02f6415203be841dd25a&variables=%7B%22id%22%3A%22' + id + '%22%2C%22include_reel%22%3Atrue%2C%22fetch_mutual%22%3Afalse%2C%22first%22%3A50%2C%22after%22%3A%22' + json_obj.data.user.edge_followed_by.page_info.end_cursor + '%3D%3D%22%7D';
         followedUrl = followedUrl.replace('==', '');
 
@@ -166,16 +172,13 @@ async function dialyUnfollow() {
     diff = Array.from(await getDifference());
     console.log(diff.length + " users are not following you back.");
 
-        for (let i = 0; i < diff.length; i++) {
-            if (limit==1) break;
-            await sleep(calculateDelay(delay));
-            unFollow(diff[i]);
-        }
-
+    for (let i = 0; i < diff.length; i++) {
+        if (limit === 1) break;
+        await sleep(calculateDelay(delay));
+        unFollow(diff[i]);
+    }
 
 
 }
 
 dialyUnfollow();
-
-
