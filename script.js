@@ -55,7 +55,7 @@ async function getFollow() {
     var req = new XMLHttpRequest();
 
     while (list.length < totalFollow) {
-        await sleep(calculateDelay(delay) / (22*delay));
+        await sleep(calculateDelay(delay) / (22 * delay));
         req.open("GET", followUrl, false);
         req.send(null);
 
@@ -87,7 +87,7 @@ async function getFollowed() {
     var list = [];
     var req = new XMLHttpRequest();
     while (list.length < totalFollowed) {
-        await sleep(calculateDelay(delay) / 22);
+        await sleep(calculateDelay(delay) / (22 * delay));
 
         req.open("GET", followedUrl, false);
         req.send(null);
@@ -138,7 +138,7 @@ function unFollow(toUnfollowId) {
 
     })
         .then(function (response) {
-            if (response.ok) {
+            if (response.status === 200) {
                 ++counter;
                 console.log(counter + " users have been unfollowed");
                 limit--;
