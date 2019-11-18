@@ -55,7 +55,7 @@ async function getFollow() {
     var req = new XMLHttpRequest();
 
     while (list.length < totalFollow) {
-        await sleep(calculateDelay(delay) / 22);
+        await sleep(calculateDelay(delay) / (22*delay));
         req.open("GET", followUrl, false);
         req.send(null);
 
