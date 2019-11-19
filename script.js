@@ -15,12 +15,12 @@ let token = '';
  * dialy limit, 200 is maximum, but don't be greedy
  * @type {number}
  */
-let limit = 200;
+let limit = 50;
 /**
  * minimum delay coefficient between requests, don't go bellow 1, the higher it is it is more secure
  * @type {number}
  */
-let delay = 1;
+let delay = 10;
 /**
  * helps to count unfollowed users, don't change it
  * @type {number}
@@ -66,7 +66,6 @@ async function getFollow() {
         for (var node of json_obj.data.user.edge_follow.edges) {
             list.push(node.node.id);
         }
-        console.log('duzina liste:' + list.length);
         if (json_obj.data.user.edge_follow.page_info.has_next_page !== true)
             break;
         totalFollow = parseInt(json_obj.data.user.edge_follow.count);
@@ -100,7 +99,6 @@ async function getFollowed() {
             list.push(node.node.id);
 
         }
-        console.log('duzina liste:' + list.length);
         if (json_obj.data.user.edge_followed_by.page_info.has_next_page !== true)
             break;
         totalFollowed = parseInt(json_obj.data.user.edge_followed_by.count);
